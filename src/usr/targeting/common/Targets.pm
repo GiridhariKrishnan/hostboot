@@ -100,6 +100,7 @@ sub new
         enumerations => undef,
         MAX_MCS      => 0,
         UNIT_COUNTS  => undef,
+        master_proc  => undef,
         huid_idx     => undef,
         mru_idx      => undef,
         force        => 0,
@@ -239,6 +240,7 @@ sub printTarget
 
     print $fh "<targetInstance>\n";
     my $target_id = $self->getAttribute($target, "PHYS_PATH");
+    my $target_TYPE = $self->getAttribute($target, "TYPE");
     $target_id = substr($target_id, 9);
     $target_id =~ s/\///g;
     $target_id =~ s/\-//g;
@@ -557,6 +559,13 @@ sub buildHierarchy
                       ->{BUS}
                   },
                 $b
+            );
+            push(
+                @{
+                    $self->{data}->{TARGETS}->{$source_target}->{CONNECTION}
+                      ->{BUS_PARENT}
+                  },
+                $key
             );
             my %bus_entry;
             $bus_entry{SOURCE_TARGET} = $source_target;
@@ -2386,6 +2395,15 @@ sub getConnectionBus
     return $target_ptr->{CONNECTION}->{BUS}->[$i];
 }
 
+sub getConnectionBusParent
+{
+    my $self       = shift;
+    my $target     = shift;
+    my $i          = shift;
+    my $target_ptr = $self->getTarget($target);
+    return $target_ptr->{CONNECTION}->{BUS_PARENT}->[$i];
+}
+
 sub findFirstEndpoint
 {
     my $self     = shift;
@@ -3175,7 +3193,17 @@ sub getSystemName
     my $self = shift;
     return $self->getAttribute("/".$self->{TOP_LEVEL}, "SYSTEM_NAME");
 }
-
+sub getMasterProc
+{
+    my $self = shift;
+    return $self->{master_proc};
+}
+sub setMasterProc
+{
+    my $self = shift;
+    my $target = shift;
+    $self->{master_proc}=$target;
+}
 #--------------------------------------------------
 ## Utility function to process all of the existing
 ## types of dimm port attributes that we have
